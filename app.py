@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify
 from miner_funktionen import get_miner_data
 from nachtwaechter import starte_nachtwaechter
+import energie
 import threading
 import json
 import os
@@ -33,12 +34,20 @@ def live_daten():
     solo_daten = []
     for miner in SOLO_MINERS:
         daten = get_miner_data(miner['ip'])
-        solo_daten.append({"info": miner, "daten": daten})
+        solo_daten.append({
+            "info": miner,
+            "daten": daten,
+            "energie_kwh": energie.hole_verbrauch_kwh(miner['ip']),
+        })
 
     pool_daten = []
     for miner in POOL_MINERS:
         daten = get_miner_data(miner['ip'])
-        pool_daten.append({"info": miner, "daten": daten})
+        pool_daten.append({
+            "info": miner,
+            "daten": daten,
+            "energie_kwh": energie.hole_verbrauch_kwh(miner['ip']),
+        })
 
     return jsonify({"solo": solo_daten, "pool": pool_daten})
 

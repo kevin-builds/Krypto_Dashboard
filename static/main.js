@@ -40,6 +40,7 @@ function sortMiners(minersArray) {
             case 'coin': valA = (a.info.coin || "").toLowerCase(); valB = (b.info.coin || "").toLowerCase(); break;
             case 'hashRate': valA = a.daten.hashRate; valB = b.daten.hashRate; break;
             case 'power': valA = a.daten.power; valB = b.daten.power; break;
+            case 'energie': valA = a.energie_kwh || 0; valB = b.energie_kwh || 0; break;
             case 'temp': valA = a.daten.temp; valB = b.daten.temp; break;
             case 'bestDiff': valA = a.daten.bestDiff; valB = b.daten.bestDiff; break;
             case 'uptime': valA = a.daten.uptimeSeconds; valB = b.daten.uptimeSeconds; break;
@@ -92,9 +93,9 @@ function formatNumber(num) {
 }
 
 // Baut den HTML-Code für EINE Tabellenzeile
-function buildRowHTML(minerInfo, minerDaten, isSolo) {
+function buildRowHTML(minerInfo, minerDaten, isSolo, energieKwh) {
     if (!minerDaten) {
-        let colspan = isSolo ? 9 : 8;
+        let colspan = isSolo ? 10 : 9;
         return `<tr class="row-offline">
             <td><strong>${minerInfo.name}</strong><br><small>${minerInfo.ip}</small></td>
             <td><strong>${minerInfo.coin || 'Unbekannt'}</strong></td>
@@ -116,6 +117,7 @@ function buildRowHTML(minerInfo, minerDaten, isSolo) {
         <td style="color: #f7931a;"><strong>${minerInfo.coin || 'BTC'}</strong></td>
         <td class="highlight">${thsCurrent}</td>
         <td>${minerDaten.power} W</td>
+        <td>${energieKwh != null ? energieKwh.toFixed(3) : "0.000"} kWh</td>
         <td>${eff}</td>
         <td>${tempFan}</td>
         ${specificCols}
@@ -135,20 +137,20 @@ async function fetchLiveDaten() {
 
         let soloHtml = "";
         if (sortierteSolo.length === 0) {
-            soloHtml = '<tr><td colspan="9" style="text-align:center;">Keine Solo-Miner eingetragen.</td></tr>';
+            soloHtml = '<tr><td colspan="10" style="text-align:center;">Keine Solo-Miner eingetragen.</td></tr>';
         } else {
             sortierteSolo.forEach(miner => {
-                soloHtml += buildRowHTML(miner.info, miner.daten, true);
+                soloHtml += buildRowHTML(miner.info, miner.daten, true, miner.energie_kwh);
             });
         }
         document.getElementById('solo-table-body').innerHTML = soloHtml;
 
         let poolHtml = "";
         if (sortiertePool.length === 0) {
-            poolHtml = '<tr><td colspan="8" style="text-align:center;">Keine Pool-Miner eingetragen.</td></tr>';
+            poolHtml = '<tr><td colspan="9" style="text-align:center;">Keine Pool-Miner eingetragen.</td></tr>';
         } else {
             sortiertePool.forEach(miner => {
-                poolHtml += buildRowHTML(miner.info, miner.daten, false);
+                poolHtml += buildRowHTML(miner.info, miner.daten, false, miner.energie_kwh);
             });
         }
         document.getElementById('pool-table-body').innerHTML = poolHtml;

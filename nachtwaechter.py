@@ -3,6 +3,7 @@ import requests
 import json
 import os
 from miner_funktionen import get_miner_data
+import energie
 
 def load_webhook_url():
     if os.path.exists('config.json'):
@@ -16,8 +17,9 @@ miner_gedaechtnis = {}
 
 
 def sende_discord_alarm(nachricht):
-    # Prüfe: Ist die URL leer ODER ist sie noch der Beispiel-Text?
-    if not DISCORD_WEBHOOK_URL or "discord.com" in DISCORD_WEBHOOK_URL:
+    # Prüfe: Ist die URL leer ODER sieht sie NICHT wie ein echter Webhook aus?
+    # (Ein echter Discord-Webhook enthält "discord.com/api/webhooks".)
+    if not DISCORD_WEBHOOK_URL or "discord.com/api/webhooks" not in DISCORD_WEBHOOK_URL:
         print("Abbruch: Kein gültiger Discord-Webhook konfiguriert.")
         return
 
@@ -67,15 +69,30 @@ def check_alarme(miner_ip, daten, ist_solo):
                 status["bloecke_bisher"] = aktuelle_bloecke
 
 
+def _erfasse_energie(miner_ip, daten, intervall_s):
+    # Bei Online-Miner die aktuelle Leistung (Watt) über das vergangene
+    # Intervall als verbrauchte Energie aufsummieren.
+    if daten and "error" not in daten:
+        energie.addiere_verbrauch(miner_ip, daten.get("power"), intervall_s)
+
+
 def starte_nachtwaechter(solo_miners, pool_miners):
     print("Nachtwächter gestartet. Überwache Miner im Hintergrund...")
+    # Echte vergangene Zeit zwischen den Zyklen messen (genauer als fix 60s).
+    letzte_zeit = time.time()
     while True:
+        jetzt = time.time()
+        intervall_s = jetzt - letzte_zeit
+        letzte_zeit = jetzt
+
         for miner in solo_miners:
             daten = get_miner_data(miner['ip'])
             check_alarme(miner['ip'], daten, ist_solo=True)
+            _erfasse_energie(miner['ip'], daten, intervall_s)
 
         for miner in pool_miners:
             daten = get_miner_data(miner['ip'])
             check_alarme(miner['ip'], daten, ist_solo=False)
+            _erfasse_energie(miner['ip'], daten, intervall_s)
 
         time.sleep(60)
