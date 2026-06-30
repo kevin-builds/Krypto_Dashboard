@@ -19,11 +19,11 @@ function setSort(key) {
 function updateSortArrows() {
     // Erstmal alle Pfeile löschen
     document.querySelectorAll('.sort-arrow').forEach(el => el.innerHTML = '');
-    // Dann beim aktiven Feld den Pfeil setzen
-    const activeArrow = document.getElementById(`sort-${currentSortKey}`);
-    if (activeArrow) {
-        activeArrow.innerHTML = sortAscending ? '▲' : '▼';
-    }
+    // Dann beim aktiven Feld den Pfeil setzen – in ALLEN Tabellen
+    // (per data-sort statt id, da derselbe Schlüssel mehrfach vorkommt)
+    document.querySelectorAll(`.sort-arrow[data-sort="${currentSortKey}"]`).forEach(el => {
+        el.innerHTML = sortAscending ? '▲' : '▼';
+    });
 }
 
 // Sortiert unsere Datenliste
