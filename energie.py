@@ -13,6 +13,8 @@ import json
 import os
 import threading
 
+import speicher
+
 # Speicherort relativ zum Arbeitsverzeichnis (= /home/pi/Krypto_Dashboard).
 ENERGIE_DATEI = "energie.json"
 
@@ -46,8 +48,7 @@ def addiere_verbrauch(miner_ip: str, leistung_w: float, intervall_s: float) -> N
     with _lock:
         _verbrauch_wh[miner_ip] = _verbrauch_wh.get(miner_ip, 0.0) + zuwachs_wh
         try:
-            with open(ENERGIE_DATEI, "w", encoding="utf-8") as f:
-                json.dump(_verbrauch_wh, f)
+            speicher.atomar_json_schreiben(ENERGIE_DATEI, _verbrauch_wh)
         except OSError:
             pass  # Schreibfehler darf den Nachtwächter nicht abstürzen lassen
 

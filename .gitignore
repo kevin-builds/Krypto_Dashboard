@@ -14,5 +14,10 @@ Thumbs.db
 # Lokale Miner-Konfiguration ignorieren
 config.json
 
+# Laufzeit-Daten (nur auf dem Pi, nicht ins Repo)
+energie.json
+verlauf.json
+*.tmp
+
 # PyCharm Einstellungen ignorieren
 .idea/

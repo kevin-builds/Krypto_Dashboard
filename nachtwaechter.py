@@ -4,6 +4,7 @@ import json
 import os
 from miner_funktionen import get_miner_data
 import energie
+import verlauf
 
 def load_webhook_url():
     if os.path.exists('config.json'):
@@ -89,10 +90,12 @@ def starte_nachtwaechter(solo_miners, pool_miners):
             daten = get_miner_data(miner['ip'])
             check_alarme(miner['ip'], daten, ist_solo=True)
             _erfasse_energie(miner['ip'], daten, intervall_s)
+            verlauf.erfasse_punkt(miner['ip'], daten)
 
         for miner in pool_miners:
             daten = get_miner_data(miner['ip'])
             check_alarme(miner['ip'], daten, ist_solo=False)
             _erfasse_energie(miner['ip'], daten, intervall_s)
+            verlauf.erfasse_punkt(miner['ip'], daten)
 
         time.sleep(60)

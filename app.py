@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify
 from miner_funktionen import get_miner_data
 from nachtwaechter import starte_nachtwaechter
 import energie
+import verlauf
 import threading
 import json
 import os
@@ -50,6 +51,14 @@ def live_daten():
         })
 
     return jsonify({"solo": solo_daten, "pool": pool_daten})
+
+
+@app.route('/verlauf')
+def verlauf_daten():
+    # Liefert die gesammelte Historie (Hashrate/Leistung/Temperatur ueber Zeit)
+    # je Miner-IP fuer die Graphen im Frontend.
+    return jsonify(verlauf.hole_verlauf())
+
 
 if __name__ == '__main__':
     waechter_thread = threading.Thread(target=starte_nachtwaechter, args=(SOLO_MINERS, POOL_MINERS), daemon=True)

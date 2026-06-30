@@ -160,7 +160,81 @@ async function fetchLiveDaten() {
     }
 }
 
+// ============================================================
+// VERLAUFS-GRAPH (Chart.js)
+// ============================================================
+let verlaufChart = null;
+const MINER_FARBEN = ['#f7931a', '#00e676', '#29b6f6', '#ab47bc', '#ef5350', '#ffee58'];
+const METRIK_LABEL = { hashRate: 'Hashrate (GH/s)', power: 'Strom (W)', temp: 'Temperatur (°C)' };
+
+// Erstellt das (anfangs leere) Diagramm
+function initChart() {
+    const canvas = document.getElementById('verlauf-chart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    verlaufChart = new Chart(canvas, {
+        type: 'line',
+        data: { datasets: [] },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'nearest', intersect: false },
+            scales: {
+                x: {
+                    type: 'linear',
+                    ticks: {
+                        color: '#aaa',
+                        // Unix-Zeitstempel (ms) als HH:MM anzeigen
+                        callback: (v) => new Date(v).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+                    },
+                    grid: { color: 'rgba(255,255,255,0.07)' }
+                },
+                y: {
+                    ticks: { color: '#aaa' },
+                    grid: { color: 'rgba(255,255,255,0.07)' }
+                }
+            },
+            plugins: { legend: { labels: { color: '#ddd' } } }
+        }
+    });
+}
+
+// Holt den Verlauf und aktualisiert das Diagramm für die gewählte Kennzahl
+async function fetchVerlauf() {
+    if (!verlaufChart) return;
+    try {
+        const response = await fetch('/verlauf');
+        const verlauf = await response.json();   // { ip: [ {t, hashRate, power, temp}, ... ] }
+        const metrik = document.getElementById('metrik').value;
+
+        // Pro Miner eine Linie (x = Zeit in ms, y = gewählte Kennzahl)
+        verlaufChart.data.datasets = Object.keys(verlauf).map((ip, i) => {
+            const farbe = MINER_FARBEN[i % MINER_FARBEN.length];
+            return {
+                label: ip,
+                data: verlauf[ip].map(p => ({ x: p.t * 1000, y: p[metrik] })),
+                borderColor: farbe,
+                backgroundColor: farbe,
+                borderWidth: 2,
+                pointRadius: 0,
+                tension: 0.25
+            };
+        });
+
+        verlaufChart.options.scales.y.title = { display: true, text: METRIK_LABEL[metrik], color: '#aaa' };
+        verlaufChart.update();
+    } catch (error) {
+        console.error("Fehler beim Abrufen des Verlaufs:", error);
+    }
+}
+
 // Initialer Start
 updateSortArrows();
 fetchLiveDaten();
 setInterval(fetchLiveDaten, 5000);
+
+initChart();
+fetchVerlauf();
+setInterval(fetchVerlauf, 60000);   // Verlauf alle 60 s nachladen
+const metrikSelect = document.getElementById('metrik');
+if (metrikSelect) metrikSelect.addEventListener('change', fetchVerlauf);

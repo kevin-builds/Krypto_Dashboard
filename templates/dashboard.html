@@ -50,6 +50,20 @@
         </tbody>
     </table>
 
+    <h2>Verlauf</h2>
+    <div style="margin-bottom: 10px;">
+        <label for="metrik">Kennzahl: </label>
+        <select id="metrik">
+            <option value="hashRate">Hashrate</option>
+            <option value="power">Strom (W)</option>
+            <option value="temp">Temperatur (°C)</option>
+        </select>
+    </div>
+    <div style="height: 320px; margin-bottom: 30px;">
+        <canvas id="verlauf-chart"></canvas>
+    </div>
+
+    <script src="{{ url_for('static', filename='chart.umd.min.js') }}"></script>
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 
 </body>
