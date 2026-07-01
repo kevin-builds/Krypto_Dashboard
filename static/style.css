@@ -58,3 +58,73 @@ th.sortable:hover {
     font-size: 0.8em;
     margin-left: 5px;
 }
+
+/* Buttons (Details-Toggle + Zeitraum-Buttons) */
+.btn, .bereich-buttons button {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.2s, color 0.2s;
+}
+.btn:hover, .bereich-buttons button:hover {
+    background-color: #444;
+    color: #f7931a;
+}
+.bereich-buttons { text-align: center; margin-bottom: 15px; }
+.bereich-buttons button { margin: 0 3px; }
+.bereich-buttons button.aktiv {
+    background-color: #f7931a;
+    color: #121212;
+    border-color: #f7931a;
+    font-weight: bold;
+}
+
+/* Übersichtsleiste (KPIs) */
+.kpi-leiste {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 25px;
+}
+.kpi {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 12px 22px;
+    min-width: 140px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.kpi-label {
+    display: block;
+    font-size: 0.75em;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.kpi-wert {
+    display: block;
+    font-size: 1.4em;
+    font-weight: bold;
+    color: #f7931a;
+    margin-top: 4px;
+}
+
+/* Ampel-Kreis vor Effizienz / Temperatur */
+.ampel {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: middle;
+}
+
+/* Faltbare Detail-Spalten: standardmäßig ausgeblendet, per Toggle sichtbar */
+.detail-spalte { display: none; }
+body.details-an .detail-spalte { display: table-cell; }

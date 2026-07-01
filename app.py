@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, request
 from miner_funktionen import get_miner_data
 from nachtwaechter import starte_nachtwaechter
 import energie
@@ -55,9 +55,10 @@ def live_daten():
 
 @app.route('/verlauf')
 def verlauf_daten():
-    # Liefert die gesammelte Historie (Hashrate/Leistung/Temperatur ueber Zeit)
-    # je Miner-IP fuer die Graphen im Frontend.
-    return jsonify(verlauf.hole_verlauf())
+    # Liefert die Historie (Hashrate/Leistung/Temperatur ueber Zeit) je Miner
+    # fuer den gewaehlten Zeitraum (?bereich=1h|24h|woche|monat|jahr|gesamt).
+    bereich = request.args.get("bereich", "24h")
+    return jsonify(verlauf.hole_verlauf(bereich))
 
 
 if __name__ == '__main__':

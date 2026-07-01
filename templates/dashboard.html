@@ -9,20 +9,26 @@
 
     <h1>Mining Operations Live</h1>
 
+    <div id="kpi-leiste" class="kpi-leiste"></div>
+
+    <div style="text-align:center; margin-bottom:25px;">
+        <button id="details-toggle" class="btn">Details anzeigen</button>
+    </div>
+
 <h2>Solo Miner Farm</h2>
     <table>
         <thead>
             <tr>
                 <th class="sortable" onclick="setSort('name')">Miner / IP <span data-sort="name" class="sort-arrow"></span></th>
-                <th class="sortable" onclick="setSort('coin')">Coin <span data-sort="coin" class="sort-arrow"></span></th>
+                <th class="sortable detail-spalte" onclick="setSort('coin')">Coin <span data-sort="coin" class="sort-arrow"></span></th>
                 <th class="sortable" onclick="setSort('hashRate')">Hashrate <span data-sort="hashRate" class="sort-arrow"></span></th>
                 <th class="sortable" onclick="setSort('power')">Strom <span data-sort="power" class="sort-arrow"></span></th>
-                <th class="sortable" onclick="setSort('energie')">Gesamt ⚡ <span data-sort="energie" class="sort-arrow"></span></th>
+                <th class="sortable detail-spalte" onclick="setSort('energie')">Gesamt ⚡ <span data-sort="energie" class="sort-arrow"></span></th>
                 <th>Effizienz</th>
                 <th class="sortable" onclick="setSort('temp')">Temp / Lüfter <span data-sort="temp" class="sort-arrow"></span></th>
-                <th class="sortable" onclick="setSort('bestDiff')">Best Diff 🎯 <span data-sort="bestDiff" class="sort-arrow"></span></th>
-                <th>Blöcke 🏆</th>
-                <th class="sortable" onclick="setSort('uptime')">Uptime ⏱️ <span data-sort="uptime" class="sort-arrow"></span></th>
+                <th class="sortable detail-spalte" onclick="setSort('bestDiff')">Best Diff 🎯 <span data-sort="bestDiff" class="sort-arrow"></span></th>
+                <th class="detail-spalte">Blöcke 🏆</th>
+                <th class="sortable detail-spalte" onclick="setSort('uptime')">Uptime ⏱️ <span data-sort="uptime" class="sort-arrow"></span></th>
             </tr>
         </thead>
         <tbody id="solo-table-body">
@@ -35,14 +41,14 @@
         <thead>
             <tr>
                 <th class="sortable" onclick="setSort('name')">Miner / IP <span data-sort="name" class="sort-arrow"></span></th>
-                <th class="sortable" onclick="setSort('coin')">Coin <span data-sort="coin" class="sort-arrow"></span></th>
+                <th class="sortable detail-spalte" onclick="setSort('coin')">Coin <span data-sort="coin" class="sort-arrow"></span></th>
                 <th class="sortable" onclick="setSort('hashRate')">Hashrate <span data-sort="hashRate" class="sort-arrow"></span></th>
                 <th class="sortable" onclick="setSort('power')">Strom <span data-sort="power" class="sort-arrow"></span></th>
-                <th class="sortable" onclick="setSort('energie')">Gesamt ⚡ <span data-sort="energie" class="sort-arrow"></span></th>
+                <th class="sortable detail-spalte" onclick="setSort('energie')">Gesamt ⚡ <span data-sort="energie" class="sort-arrow"></span></th>
                 <th>Effizienz</th>
                 <th class="sortable" onclick="setSort('temp')">Temp / Lüfter <span data-sort="temp" class="sort-arrow"></span></th>
-                <th>Shares (Acc / Rej) 📉</th>
-                <th class="sortable" onclick="setSort('uptime')">Uptime ⏱️ <span data-sort="uptime" class="sort-arrow"></span></th>
+                <th class="detail-spalte">Shares (Acc / Rej) 📉</th>
+                <th class="sortable detail-spalte" onclick="setSort('uptime')">Uptime ⏱️ <span data-sort="uptime" class="sort-arrow"></span></th>
             </tr>
         </thead>
         <tbody id="pool-table-body">
@@ -58,6 +64,14 @@
             <option value="power">Strom (W)</option>
             <option value="temp">Temperatur (°C)</option>
         </select>
+    </div>
+    <div id="chart-bereiche" class="bereich-buttons">
+        <button data-bereich="1h">1 H</button>
+        <button data-bereich="24h" class="aktiv">24 H</button>
+        <button data-bereich="woche">1 Woche</button>
+        <button data-bereich="monat">1 Monat</button>
+        <button data-bereich="jahr">1 Jahr</button>
+        <button data-bereich="gesamt">Gesamt</button>
     </div>
     <div style="height: 320px; margin-bottom: 30px;">
         <canvas id="verlauf-chart"></canvas>

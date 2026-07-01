@@ -92,36 +92,68 @@ function formatNumber(num) {
     return num.toLocaleString('de-DE');
 }
 
+// Kleiner Ampel-Kreis vor einem Wert: grün (gut) / orange (mittel) / rot (schlecht).
+// Konvention hier: höherer Wert = schlechter (gilt für Temperatur und J/TH-Effizienz).
+function ampelDot(wert, gruenMax, orangeMax) {
+    let farbe = (wert < gruenMax) ? '#28a745' : (wert < orangeMax ? '#ffa000' : '#ff4d4d');
+    return `<span class="ampel" style="background:${farbe};"></span>`;
+}
+
+// Füllt die Übersichtsleiste (KPIs) aus allen Live-Daten
+function updateKpi(alleMiner) {
+    const el = document.getElementById('kpi-leiste');
+    if (!el) return;
+
+    const gesamt = alleMiner.length;
+    const online = alleMiner.filter(m => m.daten).length;
+    let hashSum = 0, powerSum = 0;
+    alleMiner.forEach(m => {
+        if (m.daten) {
+            hashSum += m.daten.hashRate || 0;
+            powerSum += m.daten.power || 0;
+        }
+    });
+    const jetzt = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+    el.innerHTML = `
+        <div class="kpi"><span class="kpi-label">Miner online</span><span class="kpi-wert">${online} / ${gesamt}</span></div>
+        <div class="kpi"><span class="kpi-label">Gesamt-Hashrate</span><span class="kpi-wert">${(hashSum / 1000).toFixed(2)} TH/s</span></div>
+        <div class="kpi"><span class="kpi-label">Verbrauch</span><span class="kpi-wert">${Math.round(powerSum)} W</span></div>
+        <div class="kpi"><span class="kpi-label">Aktualisiert</span><span class="kpi-wert">${jetzt}</span></div>
+    `;
+}
+
 // Baut den HTML-Code für EINE Tabellenzeile
 function buildRowHTML(minerInfo, minerDaten, isSolo, energieKwh) {
     if (!minerDaten) {
         let colspan = isSolo ? 10 : 9;
         return `<tr class="row-offline">
             <td><strong>${minerInfo.name}</strong><br><small>${minerInfo.ip}</small></td>
-            <td><strong>${minerInfo.coin || 'Unbekannt'}</strong></td>
+            <td class="detail-spalte"><strong>${minerInfo.coin || 'Unbekannt'}</strong></td>
             <td colspan="${colspan - 2}" class="error-text">OFFLINE / NICHT ERREICHBAR</td>
         </tr>`;
     }
 
     let thsCurrent = formatTHs(minerDaten.hashRate);
     let eff = calcEfficiency(minerDaten.power, minerDaten.hashRate);
+    let effNum = (minerDaten.hashRate > 0) ? minerDaten.power / (minerDaten.hashRate / 1000) : 0;
     let uptime = formatUptime(minerDaten.uptimeSeconds);
     let tempFan = `${minerDaten.temp.toFixed(1)} &deg;C / ${minerDaten.fanrpm} RPM`;
 
     let specificCols = isSolo
-        ? `<td>${formatNumber(minerDaten.bestDiff)}</td><td><strong>${minerDaten.foundBlocks || 0}</strong></td>`
-        : `<td><span style="color:#00e676;">${minerDaten.sharesAccepted || 0}</span> / <span class="error-text">${minerDaten.sharesRejected || 0}</span></td>`;
+        ? `<td class="detail-spalte">${formatNumber(minerDaten.bestDiff)}</td><td class="detail-spalte"><strong>${minerDaten.foundBlocks || 0}</strong></td>`
+        : `<td class="detail-spalte"><span style="color:#00e676;">${minerDaten.sharesAccepted || 0}</span> / <span class="error-text">${minerDaten.sharesRejected || 0}</span></td>`;
 
     return `<tr class="row-online">
         <td><strong>${minerInfo.name}</strong><br><small>${minerInfo.ip}</small></td>
-        <td style="color: #f7931a;"><strong>${minerInfo.coin || 'BTC'}</strong></td>
+        <td class="detail-spalte" style="color: #f7931a;"><strong>${minerInfo.coin || 'BTC'}</strong></td>
         <td class="highlight">${thsCurrent}</td>
         <td>${minerDaten.power} W</td>
-        <td>${energieKwh != null ? energieKwh.toFixed(3) : "0.000"} kWh</td>
-        <td>${eff}</td>
-        <td>${tempFan}</td>
+        <td class="detail-spalte">${energieKwh != null ? energieKwh.toFixed(3) : "0.000"} kWh</td>
+        <td>${ampelDot(effNum, 22, 35)}${eff}</td>
+        <td>${ampelDot(minerDaten.temp, 65, 75)}${tempFan}</td>
         ${specificCols}
-        <td>${uptime}</td>
+        <td class="detail-spalte">${uptime}</td>
     </tr>`;
 }
 
@@ -130,6 +162,9 @@ async function fetchLiveDaten() {
     try {
         const response = await fetch('/live-daten');
         const daten = await response.json();
+
+        // Übersichtsleiste aus allen Minern aktualisieren
+        updateKpi(daten.solo.concat(daten.pool));
 
         // BEVOR wir das HTML bauen, schicken wir die Daten durch unsere Sortier-Maschine!
         const sortierteSolo = sortMiners(daten.solo);
@@ -164,6 +199,7 @@ async function fetchLiveDaten() {
 // VERLAUFS-GRAPH (Chart.js)
 // ============================================================
 let verlaufChart = null;
+let aktuellerBereich = '24h';   // gewählter Zeitraum (1h/24h/woche/monat/jahr/gesamt)
 const MINER_FARBEN = ['#f7931a', '#00e676', '#29b6f6', '#ab47bc', '#ef5350', '#ffee58'];
 const METRIK_LABEL = { hashRate: 'Hashrate (GH/s)', power: 'Strom (W)', temp: 'Temperatur (°C)' };
 
@@ -184,8 +220,13 @@ function initChart() {
                     type: 'linear',
                     ticks: {
                         color: '#aaa',
-                        // Unix-Zeitstempel (ms) als HH:MM anzeigen
-                        callback: (v) => new Date(v).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+                        // kurze Zeiträume -> Uhrzeit (HH:MM), lange -> Datum (TT.MM)
+                        callback: (v) => {
+                            const d = new Date(v);
+                            if (aktuellerBereich === '1h' || aktuellerBereich === '24h')
+                                return d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+                            return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' });
+                        }
                     },
                     grid: { color: 'rgba(255,255,255,0.07)' }
                 },
@@ -203,7 +244,7 @@ function initChart() {
 async function fetchVerlauf() {
     if (!verlaufChart) return;
     try {
-        const response = await fetch('/verlauf');
+        const response = await fetch(`/verlauf?bereich=${aktuellerBereich}`);
         const verlauf = await response.json();   // { ip: [ {t, hashRate, power, temp}, ... ] }
         const metrik = document.getElementById('metrik').value;
 
@@ -238,3 +279,23 @@ fetchVerlauf();
 setInterval(fetchVerlauf, 60000);   // Verlauf alle 60 s nachladen
 const metrikSelect = document.getElementById('metrik');
 if (metrikSelect) metrikSelect.addEventListener('change', fetchVerlauf);
+
+// Zeitraum-Buttons für den Graphen
+document.querySelectorAll('#chart-bereiche button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        aktuellerBereich = btn.dataset.bereich;
+        document.querySelectorAll('#chart-bereiche button').forEach(b => b.classList.remove('aktiv'));
+        btn.classList.add('aktiv');
+        fetchVerlauf();
+    });
+});
+
+// Details ein-/ausklappen (blendet die Detail-Spalten ein/aus)
+const detailsBtn = document.getElementById('details-toggle');
+if (detailsBtn) {
+    detailsBtn.addEventListener('click', () => {
+        document.body.classList.toggle('details-an');
+        detailsBtn.textContent = document.body.classList.contains('details-an')
+            ? 'Details ausblenden' : 'Details anzeigen';
+    });
+}
