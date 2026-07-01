@@ -280,15 +280,14 @@ setInterval(fetchVerlauf, 60000);   // Verlauf alle 60 s nachladen
 const metrikSelect = document.getElementById('metrik');
 if (metrikSelect) metrikSelect.addEventListener('change', fetchVerlauf);
 
-// Zeitraum-Buttons für den Graphen
-document.querySelectorAll('#chart-bereiche button').forEach(btn => {
-    btn.addEventListener('click', () => {
-        aktuellerBereich = btn.dataset.bereich;
-        document.querySelectorAll('#chart-bereiche button').forEach(b => b.classList.remove('aktiv'));
-        btn.classList.add('aktiv');
+// Zeitraum-Dropdown für den Graphen
+const bereichSelect = document.getElementById('bereich-select');
+if (bereichSelect) {
+    bereichSelect.addEventListener('change', () => {
+        aktuellerBereich = bereichSelect.value;
         fetchVerlauf();
     });
-});
+}
 
 // Details ein-/ausklappen (blendet die Detail-Spalten ein/aus)
 const detailsBtn = document.getElementById('details-toggle');

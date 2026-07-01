@@ -57,21 +57,22 @@
     </table>
 
     <h2>Verlauf</h2>
-    <div style="margin-bottom: 10px;">
-        <label for="metrik">Kennzahl: </label>
+    <div class="chart-controls">
+        <label for="metrik">Kennzahl:</label>
         <select id="metrik">
             <option value="hashRate">Hashrate</option>
             <option value="power">Strom (W)</option>
             <option value="temp">Temperatur (°C)</option>
         </select>
-    </div>
-    <div id="chart-bereiche" class="bereich-buttons">
-        <button data-bereich="1h">1 H</button>
-        <button data-bereich="24h" class="aktiv">24 H</button>
-        <button data-bereich="woche">1 Woche</button>
-        <button data-bereich="monat">1 Monat</button>
-        <button data-bereich="jahr">1 Jahr</button>
-        <button data-bereich="gesamt">Gesamt</button>
+        <label for="bereich-select">Zeitraum:</label>
+        <select id="bereich-select">
+            <option value="1h">1 Stunde</option>
+            <option value="24h" selected>24 Stunden</option>
+            <option value="woche">1 Woche</option>
+            <option value="monat">1 Monat</option>
+            <option value="jahr">1 Jahr</option>
+            <option value="gesamt">Gesamt</option>
+        </select>
     </div>
     <div style="height: 320px; margin-bottom: 30px;">
         <canvas id="verlauf-chart"></canvas>

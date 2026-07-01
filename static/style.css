@@ -59,8 +59,8 @@ th.sortable:hover {
     margin-left: 5px;
 }
 
-/* Buttons (Details-Toggle + Zeitraum-Buttons) */
-.btn, .bereich-buttons button {
+/* Button (Details-Toggle) */
+.btn {
     background-color: #2a2a2a;
     color: #e0e0e0;
     border: 1px solid #444;
@@ -70,18 +70,41 @@ th.sortable:hover {
     font-size: 0.9em;
     transition: background 0.2s, color 0.2s;
 }
-.btn:hover, .bereich-buttons button:hover {
+.btn:hover {
     background-color: #444;
     color: #f7931a;
 }
-.bereich-buttons { text-align: center; margin-bottom: 15px; }
-.bereich-buttons button { margin: 0 3px; }
-.bereich-buttons button.aktiv {
-    background-color: #f7931a;
-    color: #121212;
-    border-color: #f7931a;
-    font-weight: bold;
+
+/* Dropdowns (Kennzahl + Zeitraum) im Theme */
+.chart-controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 15px;
 }
+.chart-controls label { color: #999; font-size: 0.9em; }
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border: 1px solid #444;
+    padding: 8px 32px 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+    /* oranger Pfeil passend zum Theme */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%23f7931a' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+select:hover { border-color: #f7931a; color: #f7931a; }
+select:focus { outline: none; border-color: #f7931a; }
+select option { background-color: #2a2a2a; color: #e0e0e0; }
 
 /* Übersichtsleiste (KPIs) */
 .kpi-leiste {
